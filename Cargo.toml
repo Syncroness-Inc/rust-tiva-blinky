@@ -1,0 +1,13 @@
+[package]
+name = "rust-tiva-blinky"
+version = "0.1.0"
+authors = ["Matt Chernosky <mchernosky@syncroness.com>"]
+build = "build.rs"
+
+[dependencies]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"

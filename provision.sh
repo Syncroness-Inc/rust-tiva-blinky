@@ -23,10 +23,8 @@ apt-get -y install gcc
 apt-get -y install cmake
 apt-get -y install libssl-dev
 
-# Need to log out/in first for cargo to be on path.
-# Note this doesn't work:  error: no default toolchain configured
-
-/home/vagrant/.cargo/bin/cargo install xargo
+# Install xargo.
+sudo -u vagrant HOME=/home/vagrant bash -c "/home/vagrant/.cargo/bin/cargo install xargo"
 
 # Create a configuration file in /etc/udev/rules.d to allow access to the USB device needed for programming.
 PROG_CONF_FILE=/etc/udev/rules.d/tiva-c-launchpad.rules

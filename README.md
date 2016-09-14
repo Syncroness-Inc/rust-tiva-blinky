@@ -16,3 +16,4 @@ There is a rakefile to make building easier. Build and load the example on the b
 - Add initialization code to copy static RAM variables, so we can have RAM values initialized to values.
 - Figure out how to build in release mode. This requires working around warnings for dead code.
 - Create separate TivaWare library.
+- Move vector table exception handling to it's own module.

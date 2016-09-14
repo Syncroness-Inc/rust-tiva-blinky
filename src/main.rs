@@ -51,6 +51,7 @@ mod lang_items {
 }
 
 // Set a breakpoint if we get an exception.
+#[allow(dead_code)]
 mod exception {
     pub fn handler() -> ! {
         unsafe {
@@ -61,6 +62,9 @@ mod exception {
     }
 }
 
+// We need to put the reset and exception vectors at the right spot in memory, but they're never
+// called directly, so the compiler thinks this is dead code.
+#[allow(dead_code)]
 mod vector_table {
     #[link_section = ".reset"]
     static RESET: fn() -> ! = ::start;

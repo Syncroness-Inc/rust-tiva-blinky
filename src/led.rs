@@ -10,7 +10,6 @@ const BLUE_PIN: u8 = GPIO_PIN_2;
 const GREEN_PIN: u8 = GPIO_PIN_3;
 
 extern {
-    fn get_a_number(number: u32) -> u32;
     fn SysCtlPeripheralEnable(ui32Peripheral: u32);
     fn GPIOPinTypeGPIOOutput(ui32Port: u32, ui8Pins: u8);
     fn GPIOPinWrite(ui32Port: u32, ui8Pins: u8, ui8Val: u8);

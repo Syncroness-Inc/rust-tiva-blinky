@@ -13,13 +13,9 @@
 mod led;
 
 fn delay() {
-    let mut done = false;
-    let mut count = 0;
-    while !done {
-        count += 1;
-        if count > 400000 {
-            done = true;
-        }
+    let mut total = 0;
+    for count in 0..40000 {
+        total += count;
     }
 }
 

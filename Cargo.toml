@@ -7,7 +7,7 @@ build = "build.rs"
 [dependencies]
 
 [profile.dev]
-panic = "abort"
+panic = "abort" # Don't unwind on a panic, just abort.
 
 [profile.release]
-panic = "abort"
+panic = "abort" # Don't unwind on a panic, just abort.

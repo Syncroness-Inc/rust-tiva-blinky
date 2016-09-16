@@ -7,8 +7,23 @@
 // those are not available in this platform.
 #![no_std]
 
+// Allow use of these libraries individually (this is unstable at this point).
+#![feature(alloc)]
+#![feature(collections)]
+
 // For using in-line assembly.
 #![feature(asm)]
+
+// Pull in our custom allocator.
+extern crate libc_allocator;
+
+// We need this for the dynamic allocation on the heap used by vector.
+extern crate alloc;
+
+// Even though we are not using the standard library, we can include individual things like vectors.
+#[macro_use(vec)]
+extern crate collections;
+use collections::Vec;
 
 mod led;
 
@@ -30,6 +45,8 @@ fn delay() {
 pub fn start() -> ! {
 
     led::init();
+    
+    let v = vec![1, 2, 3];
     
     loop {
         led::set_green();
@@ -85,3 +102,12 @@ mod vector_table {
                                                   Some(::exception::handler),  // PendSV
                                                   Some(::exception::handler)]; // Systick
 }
+
+// Listed below are the five allocation functions currently required by custom
+// allocators. Their signatures and symbol names are not currently typechecked
+// by the compiler, but this is a future extension and are required to match
+// what is found below.
+//
+// Note that the standard `malloc` and `realloc` functions do not provide a way
+// to communicate alignment so this implementation would need to be improved
+// with respect to alignment in that aspect.

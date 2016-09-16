@@ -1,4 +1,11 @@
 [root]
 name = "rust-tiva-blinky"
 version = "0.1.0"
+dependencies = [
+ "libc_allocator 0.1.0",
+]
+
+[[package]]
+name = "libc_allocator"
+version = "0.1.0"
 

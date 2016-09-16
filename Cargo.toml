@@ -4,7 +4,8 @@ version = "0.1.0"
 authors = ["Matt Chernosky <mchernosky@syncroness.com>"]
 build = "build.rs"
 
-[dependencies]
+[dependencies.libc_allocator]
+path = "lib/libc_allocator"
 
 [profile.dev]
 panic = "abort" # Don't unwind on a panic, just abort.

@@ -5,6 +5,8 @@ binary = "target/cortex-m4f/debug/rust-tiva-blinky"
 
 task :default => :load
 
+task :build => "#{binary}"
+
 # The debug build requires driverlib to be built first.
 desc "Build the project in debug mode"
 task "#{binary}" => "#{driverlib}" do

@@ -13,16 +13,15 @@
 // however, can use all of libcore.
 #![no_std]
 
-// // Let's give a unique name to our custom allocator
-// #![crate_name = "my_allocator"]
-// #![crate_type = "rlib"]
+//Define some types for our 32-bit processor.
+type usize = u32;
+type c_void = u8;
 
-// // Our system allocator will use the in-tree libc crate for FFI bindings. Note
-// // that currently the external (crates.io) libc cannot be used because it links
-// // to the standard library (e.g. `#![no_std]` isn't stable yet), so that's why
-// // this specifically requires the in-tree version.
-// #![feature(libc)]
-// extern crate libc;
+extern {
+    pub fn malloc(size: u32) -> *mut c_void;
+    pub fn realloc(p: *mut c_void, size: u32) -> *mut c_void;
+    pub fn free(p: *mut c_void);	
+}
 
 // Listed below are the five allocation functions currently required by custom
 // allocators. Their signatures and symbol names are not currently typechecked
@@ -35,22 +34,20 @@
 
 #[no_mangle]
 pub extern fn __rust_allocate(size: usize, _align: usize) -> *mut u8 {
-    //unsafe { libc::malloc(size as libc::size_t) as *mut u8 }
-    0 as *mut u8
+    unsafe { malloc(size) as *mut u8 }
 }
 
 #[no_mangle]
 pub extern fn __rust_deallocate(ptr: *mut u8, _old_size: usize, _align: usize) {
-    //unsafe { libc::free(ptr as *mut libc::c_void) }
+    unsafe { free(ptr as *mut c_void) }
 }
 
 #[no_mangle]
 pub extern fn __rust_reallocate(ptr: *mut u8, _old_size: usize, size: usize,
                                 _align: usize) -> *mut u8 {
-    // unsafe {
-    //     libc::realloc(ptr as *mut libc::c_void, size as libc::size_t) as *mut u8
-    // }
-    0 as *mut u8
+    unsafe {
+        realloc(ptr as *mut c_void, size) as *mut u8
+    }
 }
 
 #[no_mangle]

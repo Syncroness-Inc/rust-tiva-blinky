@@ -8,6 +8,7 @@
     "no-compiler-rt": true,
     "os": "none",
     "pre-link-args": ["-Tlayout.ld", "-nostartfiles"],
+    "post-link-args": ["-mthumb", "-mcpu=cortex-m4", "-mfpu=fpv4-sp-d16", "-mfloat-abi=softfp", "--specs=nano.specs"],
     "relocation-model": "static",
     "target-endian": "little",
     "target-pointer-width": "32"

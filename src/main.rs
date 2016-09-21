@@ -27,11 +27,34 @@ use collections::Vec;
 
 mod led;
 
-fn delay() {
+fn delay(count: u32) {
     let mut total = 0;
-    for count in 0..40000 {
-        total += count;
+    for i in 0..count {
+        total += i;
     }
+}
+
+fn flash_green(count: u32) {
+    for i in 0..count {
+        led::set_green();
+        delay(10000);
+        led::set_off();
+        delay(10000);
+    }
+}
+
+fn flash_blue(count: u32) {
+    for i in 0..count {
+        led::set_blue();
+        delay(10000);
+        led::set_off();
+        delay(10000);
+    }
+}
+
+extern {
+    fn zero_fill_bss();
+    fn copy_initialized_data();
 }
 
 // Conceptually, this is our program "entry point". It's the first thing the microcontroller will
@@ -44,15 +67,24 @@ fn delay() {
 #[no_mangle]
 pub fn start() -> ! {
 
+    unsafe {
+        copy_initialized_data();
+        zero_fill_bss();
+    }
+
     led::init();
     
-    let v = vec![1, 2, 3];
-    
     loop {
-        led::set_green();
-        delay();
-        led::set_off();
-        delay();
+        let v = vec![1, 2, 3];
+        let u = vec![4, 5, 6];
+        for count in v {
+            flash_green(count);
+            delay(40000);
+        }
+        for count in u {
+            flash_blue(count);
+            delay(40000);
+        }
     }
 }
 
@@ -70,11 +102,46 @@ mod lang_items {
 // Set a breakpoint if we get an exception.
 #[allow(dead_code)]
 mod exception {
-    pub fn handler() -> ! {
+    
+    pub fn default_handler() -> ! {
         unsafe {
             asm!("bkpt");
         }
-
+        loop {}
+    }
+    
+    pub fn nmi() -> ! {
+        unsafe {
+            asm!("bkpt");
+        }
+        loop {}
+    }
+    
+    pub fn hard_fault() -> ! {
+        unsafe {
+            asm!("bkpt");
+        }
+        loop {}
+    }
+    
+    pub fn memory_fault() -> ! {
+        unsafe {
+            asm!("bkpt");
+        }
+        loop {}
+    }
+    
+    pub fn bus_fault() -> ! {
+        unsafe {
+            asm!("bkpt");
+        }
+        loop {}
+    }
+    
+    pub fn usage_fault() -> ! {
+        unsafe {
+            asm!("bkpt");
+        }
         loop {}
     }
 }
@@ -87,20 +154,20 @@ mod vector_table {
     static RESET: fn() -> ! = ::start;
     
     #[link_section = ".exceptions"]
-    static EXCEPTIONS: [Option<fn() -> !>; 14] = [Some(::exception::handler),  // NMI
-                                                  Some(::exception::handler),  // Hard fault
-                                                  Some(::exception::handler),  // Memory management fault
-                                                  Some(::exception::handler),  // Bus fault
-                                                  Some(::exception::handler),  // Usage fault
+    static EXCEPTIONS: [Option<fn() -> !>; 14] = [Some(::exception::nmi),  // NMI
+                                                  Some(::exception::hard_fault),  // Hard fault
+                                                  Some(::exception::memory_fault),  // Memory management fault
+                                                  Some(::exception::bus_fault),  // Bus fault
+                                                  Some(::exception::usage_fault),  // Usage fault
                                                   None, // Reserved
                                                   None, // Reserved
                                                   None, // Reserved
                                                   None, // Reserved
-                                                  Some(::exception::handler),  // SVCall
+                                                  Some(::exception::default_handler),  // SVCall
                                                   None, // Reserved for Debug
                                                   None, // Reserved
-                                                  Some(::exception::handler),  // PendSV
-                                                  Some(::exception::handler)]; // Systick
+                                                  Some(::exception::default_handler),  // PendSV
+                                                  Some(::exception::default_handler)]; // Systick
 }
 
 // Listed below are the five allocation functions currently required by custom

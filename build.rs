@@ -5,10 +5,25 @@ fn main() {
     
     // Set the target C compiler to the ARM cross compiler.
     env::set_var("TARGET_CC", "arm-none-eabi-gcc");
-    env::set_var("TARGET_CFLAGS", "-mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp");
+    env::set_var("TARGET_CFLAGS", "-O0 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp --specs=nano.specs");
+    
+    // Compile some C libraries so we can use some C code.
+    // Note that we new to use the "advanced" Config syntax so that we set the "pic" option to
+    // false. The prevents compilation with from using -fPIC option for position independent code
+    // (PIC). We do not want PIC, that's for dynamic libraries. Without this option we end up with
+    // .got and .got.ld sections in the binary, which are the sign that something is wrong.
+    // See https://github.com/alexcrichton/gcc-rs/pull/67 for details.
     
     // Compile my syscalls for the hardware, so we can use newlib as the C standard library.
-    gcc::compile_library("libsyscalls.a", &["src/syscalls.c"]);
+    gcc::Config::new()
+        .file("src/syscalls.c")
+        .pic(false)
+        .compile("libsyscalls.a");
+    
+    gcc::Config::new()
+        .file("src/startup.c")
+        .pic(false)
+        .compile("libstartup.a");
     
     // Link to the pre-compiled TivaWare library.
     println!("cargo:rustc-link-search=native=lib/TivaWare/driverlib/gcc");

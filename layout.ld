@@ -35,7 +35,7 @@ SECTIONS
         *(.bss*)
         *(COMMON)
         _ebss = .;
-    } > RAM
+    } > RAM    
 
     /DISCARD/ :
     {

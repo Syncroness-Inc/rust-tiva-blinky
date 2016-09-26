@@ -11,6 +11,7 @@ SECTIONS
         LONG(ORIGIN(RAM) + LENGTH(RAM))
         KEEP(*(.reset))
         KEEP(*(.exceptions))
+        KEEP(*(.interrupts))
     } > FLASH
 
     .text :

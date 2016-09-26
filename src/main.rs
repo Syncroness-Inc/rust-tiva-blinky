@@ -26,6 +26,7 @@ extern crate collections;
 use collections::Vec;
 
 mod led;
+mod button;
 
 fn delay(count: u32) {
     let mut total = 0;
@@ -73,10 +74,11 @@ pub fn start() -> ! {
     }
 
     led::init();
+    button::init();
     
     loop {
         let v = vec![1, 2, 3];
-        let u = vec![4, 5, 6];
+        let u = vec![4, 5];
         for count in v {
             flash_green(count);
             delay(40000);
@@ -154,27 +156,57 @@ mod vector_table {
     static RESET: fn() -> ! = ::start;
     
     #[link_section = ".exceptions"]
-    static EXCEPTIONS: [Option<fn() -> !>; 14] = [Some(::exception::nmi),  // NMI
-                                                  Some(::exception::hard_fault),  // Hard fault
-                                                  Some(::exception::memory_fault),  // Memory management fault
-                                                  Some(::exception::bus_fault),  // Bus fault
-                                                  Some(::exception::usage_fault),  // Usage fault
-                                                  None, // Reserved
-                                                  None, // Reserved
-                                                  None, // Reserved
-                                                  None, // Reserved
-                                                  Some(::exception::default_handler),  // SVCall
-                                                  None, // Reserved for Debug
-                                                  None, // Reserved
-                                                  Some(::exception::default_handler),  // PendSV
-                                                  Some(::exception::default_handler)]; // Systick
+    static EXCEPTIONS: [Option<fn() -> !>; 14] = [
+        Some(::exception::nmi),  // NMI
+        Some(::exception::hard_fault),  // Hard fault
+        Some(::exception::memory_fault),  // Memory management fault
+        Some(::exception::bus_fault),  // Bus fault
+        Some(::exception::usage_fault),  // Usage fault
+        None, // Reserved
+        None, // Reserved
+        None, // Reserved
+        None, // Reserved
+        Some(::exception::default_handler),  // SVCall
+        None, // Reserved for Debug
+        None, // Reserved
+        Some(::exception::default_handler),  // PendSV
+        Some(::exception::default_handler) // Systick
+    ];
+    
+    #[link_section = ".interrupts"]
+    static INTERRUPT_HANDLERS: [Option<fn()>; 33] = [
+        Some(::button::handler), // GPIO A
+        Some(::button::handler), // GPIO B
+        Some(::button::handler), // GPIO C
+        Some(::button::handler), // GPIO D
+        Some(::button::handler), // GPIO E
+        None, // UART0 Rx and Tx
+        None, // UART1 Rx and Tx
+        None, // SSI0 Rx and Tx
+        None, // I2C0 Master and Slave
+        None, // PWM Fault
+        None, // PWM Generator 0
+        None, // PWM Generator 1
+        None, // PWM Generator 2
+        None, // Quadrature Encoder 0
+        None, // ADC Sequence 0
+        None, // ADC Sequence 1
+        None, // ADC Sequence 2
+        None, // ADC Sequence 3
+        None, // Watchdog timer
+        None, // Timer 0 subtimer A
+        None, // Timer 0 subtimer B
+        None, // Timer 1 subtimer A
+        None, // Timer 1 subtimer B
+        None, // Timer 2 subtimer A
+        None, // Timer 2 subtimer B
+        None, // Analog Comparator 0
+        None, // Analog Comparator 1
+        None, // Analog Comparator 2
+        None, // System Control (PLL, OSC, BO)
+        None, // FLASH Control
+        Some(::button::handler), // GPIO Port F
+        Some(::button::handler), // GPIO Port G
+        Some(::button::handler), // GPIO Port H
+    ];
 }
-
-// Listed below are the five allocation functions currently required by custom
-// allocators. Their signatures and symbol names are not currently typechecked
-// by the compiler, but this is a future extension and are required to match
-// what is found below.
-//
-// Note that the standard `malloc` and `realloc` functions do not provide a way
-// to communicate alignment so this implementation would need to be improved
-// with respect to alignment in that aspect.

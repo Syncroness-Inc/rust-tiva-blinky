@@ -2,9 +2,14 @@
 name = "rust-tiva-blinky"
 version = "0.1.0"
 dependencies = [
+ "critical_section_arm 0.1.0",
  "gcc 0.3.35 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc_allocator 0.1.0",
 ]
+
+[[package]]
+name = "critical_section_arm"
+version = "0.1.0"
 
 [[package]]
 name = "gcc"
@@ -15,6 +20,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "libc_allocator"
 version = "0.1.0"
 dependencies = [
+ "critical_section_arm 0.1.0",
  "gcc 0.3.35 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

@@ -14,6 +14,9 @@
 // For using in-line assembly.
 #![feature(asm)]
 
+// Allow using types which implement Drop to be used as globals.
+#![feature(drop_types_in_const)]
+
 // Pull in our custom allocator.
 extern crate libc_allocator;
 
@@ -27,6 +30,10 @@ use collections::Vec;
 
 mod led;
 mod button;
+mod event;
+
+extern crate critical_section_arm;
+use critical_section_arm::CriticalSection;
 
 fn delay(count: u32) {
     let mut total = 0;
@@ -38,18 +45,18 @@ fn delay(count: u32) {
 fn flash_green(count: u32) {
     for i in 0..count {
         led::set_green();
-        delay(10000);
+        delay(20000);
         led::set_off();
-        delay(10000);
+        delay(20000);
     }
 }
 
 fn flash_blue(count: u32) {
     for i in 0..count {
         led::set_blue();
-        delay(10000);
+        delay(20000);
         led::set_off();
-        delay(10000);
+        delay(20000);
     }
 }
 
@@ -73,20 +80,22 @@ pub fn start() -> ! {
         zero_fill_bss();
     }
 
+    event::init();
     led::init();
     button::init();
     
+    let mut flash_count = 1;
+    
     loop {
-        let v = vec![1, 2, 3];
-        let u = vec![4, 5];
-        for count in v {
-            flash_green(count);
-            delay(40000);
+        match event::get() {
+            Some(e) => match e {
+                event::Event::ButtonPress => flash_count += 1,
+                _ => {},
+            },
+            None => {},
         }
-        for count in u {
-            flash_blue(count);
-            delay(40000);
-        }
+        flash_green(flash_count);
+        delay(60000);
     }
 }
 

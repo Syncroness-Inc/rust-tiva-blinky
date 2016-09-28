@@ -13,6 +13,12 @@
 // however, can use all of libcore.
 #![no_std]
 
+// Use this critical section package to make memory allocations safe from interrupts.
+// This is not safe for multi-threading (as a fully re-entrant version of malloc would be),
+//but it works for a single thread with interrupts.
+extern crate critical_section_arm;
+use critical_section_arm::CriticalSection;
+
 //Define some types for our 32-bit processor.
 type usize = u32;
 type c_void = u8;
@@ -34,18 +40,25 @@ extern {
 
 #[no_mangle]
 pub extern fn __rust_allocate(size: usize, _align: usize) -> *mut u8 {
-    unsafe { malloc(size) as *mut u8 }
+    unsafe {
+        let _cs = CriticalSection::new();
+        malloc(size) as *mut u8
+    }
 }
 
 #[no_mangle]
 pub extern fn __rust_deallocate(ptr: *mut u8, _old_size: usize, _align: usize) {
-    unsafe { free(ptr as *mut c_void) }
+    unsafe {
+        let _cs = CriticalSection::new();
+        free(ptr as *mut c_void)
+    }
 }
 
 #[no_mangle]
 pub extern fn __rust_reallocate(ptr: *mut u8, _old_size: usize, size: usize,
                                 _align: usize) -> *mut u8 {
     unsafe {
+        let _cs = CriticalSection::new();
         realloc(ptr as *mut c_void, size) as *mut u8
     }
 }

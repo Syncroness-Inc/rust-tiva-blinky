@@ -35,6 +35,8 @@ extern {
     fn IntDisable(ui32Interrupt: u32);
 }
 
+use super::event;
+
 pub fn init () {
     unsafe {
         
@@ -55,19 +57,13 @@ pub fn init () {
 #[allow(dead_code)]
 pub fn handler () {
     unsafe {
-        // Since we're not debouncing, disable the interrupt now so we just get one.
-        IntDisable(BUTTON_PORT_INTERRUPT);
-        
-        // Clear any pending nesting interrupts.
+        // Clear the interrupt.
         GPIOIntClear(BUTTON_PORT, BUTTON_1_INTERRUPT /*| BUTTON_2_INTERRUPT*/);
         
         // Wait for the interrupt to clear.
         SysCtlDelay(3);
         
-        // Break for the debugger.
-        asm!("bkpt");
-        
-        // Re-enable the interrupt.
-        IntEnable(BUTTON_PORT_INTERRUPT);
+        // Raise an event.
+        event::raise(event::Event::ButtonPress);
     }
 }

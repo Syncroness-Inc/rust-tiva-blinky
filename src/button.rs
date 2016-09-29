@@ -61,7 +61,7 @@ pub fn handler () {
         GPIOIntClear(BUTTON_PORT, BUTTON_1_INTERRUPT /*| BUTTON_2_INTERRUPT*/);
         
         // Wait for the interrupt to clear.
-        SysCtlDelay(3);
+        //SysCtlDelay(3);
         
         // Raise an event.
         event::raise(event::Event::ButtonPress);

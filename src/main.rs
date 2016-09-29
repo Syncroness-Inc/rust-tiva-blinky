@@ -28,7 +28,9 @@ extern crate alloc;
 extern crate collections;
 use collections::Vec;
 
+mod lang_items;
 mod vector_table;
+mod exception;
 mod led;
 mod button;
 mod event;
@@ -172,63 +174,5 @@ pub fn start() -> ! {
             Some(e) => state_machine.execute(e),
             None => {},
         }
-    }
-}
-
-// Finally, we need to define some "lang items" we are _not_ going to use, but that `rustc` demands
-// anyway. As we are not going to use the functionality they provide (panic/unwinding) we can left
-// their definitions empty.
-mod lang_items {
-    #[lang = "panic_fmt"]
-    extern fn panic_fmt() {}
-
-    #[lang = "eh_personality"]
-    fn eh_personality() {}
-}
-
-// Set a breakpoint if we get an exception.
-#[allow(dead_code)]
-mod exception {
-    
-    pub fn default_handler() -> ! {
-        unsafe {
-            asm!("bkpt");
-        }
-        loop {}
-    }
-    
-    pub fn nmi() -> ! {
-        unsafe {
-            asm!("bkpt");
-        }
-        loop {}
-    }
-    
-    pub fn hard_fault() -> ! {
-        unsafe {
-            asm!("bkpt");
-        }
-        loop {}
-    }
-    
-    pub fn memory_fault() -> ! {
-        unsafe {
-            asm!("bkpt");
-        }
-        loop {}
-    }
-    
-    pub fn bus_fault() -> ! {
-        unsafe {
-            asm!("bkpt");
-        }
-        loop {}
-    }
-    
-    pub fn usage_fault() -> ! {
-        unsafe {
-            asm!("bkpt");
-        }
-        loop {}
     }
 }

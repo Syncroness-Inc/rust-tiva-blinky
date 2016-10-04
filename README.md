@@ -19,6 +19,9 @@ Log in to the vagrant instance from two separate terminals. From one run `rake o
 - Get a new target specification file for your processor type, like one from [here](https://japaric.github.io/copper/details/target.html).
 - Update the linker script (**layout.ld**) to have the correct size and addresses of FLASH and RAM.
 
+## Unit tests
+
+Run the unit test with `rake test`. This runs the all of the test on the host (not the target board).
 
 ## To Do
 - Move RAM initialization (zero_fill_bss and copy_initialized_data) into assembly, or Rust.

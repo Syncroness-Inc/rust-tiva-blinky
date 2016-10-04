@@ -31,11 +31,19 @@ impl Drop for CriticalSection {
 
 static mut critical_section_nest_level: usize = 0;
 
+#[cfg(target_arch = "arm")]
 unsafe fn disable_interrupts() {
     asm!("cpsid i" :::: "volatile");
     critical_section_nest_level += 1;
 }
 
+#[cfg(not(target_arch = "arm"))]
+unsafe fn disable_interrupts() {
+    unimplemented!();
+}
+
+
+#[cfg(target_arch = "arm")]
 unsafe fn enable_interrupts() {
     if critical_section_nest_level == 0 {
         // This is an error. Attempting to enable interrupts without them being disabled.
@@ -47,6 +55,11 @@ unsafe fn enable_interrupts() {
         // We've gotten back to the first place interrupts were disabled. Re-enable them now.
         asm!("cpsie i" :::: "volatile");
     }
+}
+
+#[cfg(not(target_arch = "arm"))]
+unsafe fn enable_interrupts() {
+    unimplemented!();
 }
 
 #[cfg(test)]

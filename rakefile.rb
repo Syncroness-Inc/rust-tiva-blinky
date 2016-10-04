@@ -7,6 +7,11 @@ task :default => :load
 
 task :build => "#{binary}"
 
+desc "Run the tests"
+task :test do
+    sh %[cargo test]
+end
+
 # The debug build requires driverlib to be built first.
 desc "Build the project in debug mode"
 task "#{binary}" => "#{driverlib}" do

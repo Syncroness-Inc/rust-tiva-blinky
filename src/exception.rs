@@ -2,46 +2,45 @@
     Exception handlers. For now, these just set a breakepoint.
 */
 
-#[allow(dead_code)]
-    
-pub fn default_handler() -> ! {
+#[cfg(target_arch = "arm")]
+fn breakpoint() {
     unsafe {
         asm!("bkpt");
     }
+}
+
+#[cfg(not(target_arch = "arm"))]
+fn breakpoint() {
+    unimplemented!();
+}
+
+#[allow(dead_code)]
+pub fn default_handler() -> ! {
+    breakpoint();
     loop {}
 }
 
 pub fn nmi() -> ! {
-    unsafe {
-        asm!("bkpt");
-    }
+    breakpoint();
     loop {}
 }
 
 pub fn hard_fault() -> ! {
-    unsafe {
-        asm!("bkpt");
-    }
+    breakpoint();
     loop {}
 }
 
 pub fn memory_fault() -> ! {
-    unsafe {
-        asm!("bkpt");
-    }
+    breakpoint();
     loop {}
 }
 
 pub fn bus_fault() -> ! {
-    unsafe {
-        asm!("bkpt");
-    }
+    breakpoint();
     loop {}
 }
 
 pub fn usage_fault() -> ! {
-    unsafe {
-        asm!("bkpt");
-    }
+    breakpoint();
     loop {}
 }

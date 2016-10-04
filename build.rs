@@ -1,7 +1,8 @@
 extern crate gcc;
 use std::env;
 
-fn main() {
+// Build the application for the target.
+fn build_for_target () {
     
     // Set the target C compiler to the ARM cross compiler.
     env::set_var("TARGET_CC", "arm-none-eabi-gcc");
@@ -31,4 +32,22 @@ fn main() {
     
     // Link to the C standard library.
     println!("cargo:rustc-link-lib=static=c");
+}
+
+// Build for running the tests on the host.
+fn build_tests_for_host() {
+    println!("*********************************************");
+}
+
+fn main() {
+    if let Ok(target) = env::var("TARGET") {
+        if let Ok(host) = env::var("HOST"){
+            if target == host {
+                build_tests_for_host();
+                return;
+            }
+        }
+    }
+
+    build_for_target(); 
 }

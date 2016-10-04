@@ -1,31 +1,40 @@
 #![feature(lang_items)]
 
+// Conditional enable/disable a bunch of options here. This is used to configure the application
+// differently for 1) running on the target board and 2) running tests on the host. In general,
+// we're using cfg_attr to only set these attributes if target_os is "none." This is the case
+// where we're building for the target.
+
 // We won't use the usual `main` function. We are going to use a different "entry point".
-#![no_main]
+#![cfg_attr(target_os = "none", no_main)]
 
 // We won't use the standard library because it requires OS abstractions like threads and files and
 // those are not available in this platform.
-#![no_std]
+#![cfg_attr(target_os = "none", no_std)]
 
 // Allow use of these libraries individually (this is unstable at this point).
-#![feature(alloc)]
+#![cfg_attr(target_os = "none", feature(alloc))]
 #![feature(collections)]
 
 // For using in-line assembly.
 #![feature(asm)]
+#![cfg_attr(target_os = "none", feature(asm))]
 
 // Allow using types which implement Drop to be used as globals.
 #![feature(drop_types_in_const)]
 
 // Pull in our custom allocator.
+#[cfg(target_os = "none")]
 extern crate libc_allocator;
 
 // We need this for the dynamic allocation on the heap used by vector.
+#[cfg(target_os = "none")]
 extern crate alloc;
 
 // Even though we are not using the standard library, we can include individual things like vectors.
 #[macro_use(vec)]
 extern crate collections;
+
 use collections::Vec;
 
 mod lang_items;
@@ -146,7 +155,6 @@ impl StateMachine {
     }
 }
 
-
 // Conceptually, this is our program "entry point". It's the first thing the microcontroller will
 // execute when it (re)boots. (As far as the linker is concerned the entry point must be named
 // `start` (by default; it can have a different name). That's why this function is `pub`lic, named
@@ -174,5 +182,12 @@ pub fn start() -> ! {
             Some(e) => state_machine.execute(e),
             None => {},
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn it_works() {
     }
 }

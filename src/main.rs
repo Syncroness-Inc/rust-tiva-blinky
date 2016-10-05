@@ -44,9 +44,13 @@ mod led;
 mod button;
 mod event;
 mod systick;
+mod led_flash_controller;
 
 extern crate critical_section_arm;
 use critical_section_arm::CriticalSection;
+
+use event::Event;
+use led_flash_controller::LedFlashController;
 
 fn delay(count: u32) {
     let mut total = 0;
@@ -89,68 +93,56 @@ fn toggle_led(is_on: bool) -> bool {
 }
 
 struct StateMachine {
-    flash_count: u32,
-    flashed_count: u32,
-    led_flashing: bool,
-    led_on: bool,
-    timer: u32,
+    flash_count: usize,
+    flash_in_progress: bool,
+    pause_time_remaining: usize,
 }
 
 impl StateMachine {
     fn new() -> StateMachine {
         StateMachine {
             flash_count: 1,
-            flashed_count: 0,
-            led_flashing: false,
-            led_on: false,
-            timer: 0
+            flash_in_progress: false,
+            pause_time_remaining: 0,
         }
     }
     
-    fn execute(&mut self, event: event::Event) {
+    fn execute(&mut self, event: &Event) -> Option<Event>{
         
-        const LED_ON_TIME: u32 = 5;
-        const LED_OFF_TIME: u32 = 2;
+        // All times are in 10 Hz ticks.
+        const LED_ON_TIME: usize = 4;
+        const LED_OFF_TIME: usize = 3;
+        const WAIT_TIME: usize = 20;
         
-        match event {
-            event::Event::ButtonPress => {
+        match *event {
+            Event::ButtonPress => {
                 self.flash_count += 1;
+                None
             },
-            event::Event::TimeTick => {
-                if !self.led_flashing {
-                    // Wait 2 seconds.
-                    self.timer += 1;
-                    if self.timer >= 20 {
-                        self.timer = 0;
-                        self.led_flashing = true;
-                        self.flashed_count = 0;
-                    }
-                } else {
-                    // Turn on for one second, off for 1/2 second.
-                    self.timer += 1;
-                    if self.timer < LED_ON_TIME {
-                        if !self.led_on {
-                            // Initially turn on the LED.
-                            self.led_on = toggle_led(self.led_on);
-                        }
-                    }
-                    else if self.timer < (LED_ON_TIME + LED_OFF_TIME) {
-                        if self.led_on {
-                            // Turn off the LED.
-                            self.led_on = toggle_led(self.led_on);
-                        }
-                    }
-                    else {
-                        // We're done with this flash.
-                        self.flashed_count += 1;
-                        self.timer = 0;
-                    }
-                    
-                    if self.flashed_count >= self.flash_count {
-                        self.led_flashing = false;
-                    }
-                }
+            Event::TimeTick if (!self.flash_in_progress && self.pause_time_remaining == 0) => {
+                // Start the next flash.
+                self.flash_in_progress = true;
+                Some(Event::FlashLed { count: self.flash_count, on_time: LED_ON_TIME, off_time: LED_OFF_TIME })
             },
+            Event::TimeTick if self.pause_time_remaining > 0 => {
+                //We're waiting to start the next flash.
+                self.pause_time_remaining -= 1;
+                None
+            },
+            Event::FlashLedDone => {
+                self.flash_in_progress = false;
+                self.pause_time_remaining = WAIT_TIME;
+                None
+            }
+            Event::LedTurnOn => {
+                led::set_red();
+                None
+            },
+            Event::LedTurnOff => {
+                led::set_off();
+                None
+            },
+            _ => None,
         }
     }
 }
@@ -176,10 +168,22 @@ pub fn start() -> ! {
     button::init();
     
     let mut state_machine = StateMachine::new();
+    let mut led_flash_controller = LedFlashController::new();
     
     loop {
         match event::get() {
-            Some(e) => state_machine.execute(e),
+            Some(e) => {
+                match state_machine.execute(&e) {
+                    // If handling this event generates a new event, raise it to the system.
+                    Some(next_event) => event::raise(next_event),
+                    _ => (),
+                }
+                match led_flash_controller.process_event(&e) {
+                    // If handling this event generates a new event, raise it to the system.
+                    Some(next_event) => event::raise(next_event),
+                    _ => (),
+                }
+            },
             None => {},
         }
     }

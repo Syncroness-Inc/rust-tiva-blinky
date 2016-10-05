@@ -2,9 +2,14 @@
 use critical_section_arm::CriticalSection;
 use collections::Vec;
 
+#[derive(PartialEq, Debug)]
 pub enum Event {
     ButtonPress,
     TimeTick,
+    LedTurnOn,
+    LedTurnOff,
+    FlashLed { count: usize, on_time: usize, off_time: usize },
+    FlashLedDone,
 }
 
 // The static vector which holds the queue of events. Since we'll be allocating this in

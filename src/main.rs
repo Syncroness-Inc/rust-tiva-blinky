@@ -35,7 +35,8 @@ extern crate alloc;
 #[macro_use(vec)]
 extern crate collections;
 
-use collections::Vec;
+// For creating critical sections where we disable interrupts.
+extern crate critical_section_arm;
 
 mod lang_items;
 mod vector_table;
@@ -47,50 +48,12 @@ mod systick;
 mod state_machine;
 mod led_flash_controller;
 
-extern crate critical_section_arm;
-use critical_section_arm::CriticalSection;
-
 use led_flash_controller::LedFlashController;
 use state_machine::StateMachine;
-
-fn delay(count: u32) {
-    let mut total = 0;
-    for i in 0..count {
-        total += i;
-    }
-}
-
-fn flash_green(count: u32) {
-    for i in 0..count {
-        led::set_green();
-        delay(20000);
-        led::set_off();
-        delay(20000);
-    }
-}
-
-fn flash_blue(count: u32) {
-    for i in 0..count {
-        led::set_blue();
-        delay(20000);
-        led::set_off();
-        delay(20000);
-    }
-}
 
 extern {
     fn zero_fill_bss();
     fn copy_initialized_data();
-}
-
-fn toggle_led(is_on: bool) -> bool {
-    if is_on {
-        led::set_off();
-        false
-    } else {
-        led::set_blue();
-        true
-    }
 }
 
 // Conceptually, this is our program "entry point". It's the first thing the microcontroller will
